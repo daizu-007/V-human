@@ -57,10 +57,20 @@ async def on_message(message):
     if message.author.bot:
         return
     print(f"{message.author}: {message.content}")
-
-    response = chat.send_message(message.content)
-    print(f"Hinata: {response.text}")
-    await message.channel.send(response.text)
+    try:
+        response = chat.send_message(message.content)
+        print(f"Hinata: {response.text}")
+        try:
+            await message.channel.send(response.text)
+        except Exception as e:
+            print("送信に失敗しました。エラー内容: ", e)
+    except Exception as e:
+        print("AIでエラーが発生しました。エラー内容: ", e)
+        try:
+            await message.channel.send("ごめんなさい、ちょっと何言ってるかわからないなぁ...")
+        except Exception as e:
+            print("AIの処理に失敗したうえで送信に失敗しました。エラー内容: ", e)
+    
 
 client.run(DISCORD_TOKEN)
 
