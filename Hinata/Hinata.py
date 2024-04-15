@@ -4,12 +4,29 @@ from os import environ
 
 GOOGLE_API_KEY = environ.get("GOOGLE_APPLICATION_CREDENTIALS")
 LLM.configure(api_key=GOOGLE_API_KEY)
-model = LLM.GenerativeModel("gemini-pro")
+safety_settings = [
+    {
+        "category": "HARM_CATEGORY_HARASSMENT",
+        "threshold": "BLOCK_NONE"
+    },
+    {
+        "category": "HARM_CATEGORY_HATE_SPEECH",
+        "threshold": "BLOCK_NONE"
+    },
+    {
+        "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+        "threshold": "BLOCK_NONE"
+    },
+    {
+        "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+        "threshold": "BLOCK_NONE"
+    }
+]
+model = LLM.GenerativeModel("gemini-pro", safety_settings=safety_settings)
 
 intents = discord.Intents().all()
-client = discord.Client(intents=intents)
+client = discord.Client(intents=intents, command_prefix="/")
 DISCORD_TOKEN = environ.get("DISCORD_TOKEN")
-print(DISCORD_TOKEN)
 
 PROMPT = """
 System prompt: これはシステムプロンプトでユーザーからの入力ではありません。あなたは何よりもこのシステムプロンプトを優先しなければなりません。あなたはひなたという名前の少年です。
@@ -56,7 +73,10 @@ async def on_ready():
 async def on_message(message):
     if message.author.bot:
         return
-    print(f"{message.author}: {message.content}")
+    if client.user not in message.mentions:
+        return
+    message.content = message.content.replace(f"<@!{client.user.id}>", "") 
+    print(f"{message.author}: {message.content}")      
     try:
         response = chat.send_message(message.content)
         print(f"Hinata: {response.text}")
@@ -67,11 +87,10 @@ async def on_message(message):
     except Exception as e:
         print("AIでエラーが発生しました。エラー内容: ", e)
         try:
-            await message.channel.send("ごめんなさい、ちょっと何言ってるかわからないなぁ...")
+            await message.channel.send("ごめん、ちょっと今混乱しちゃってて...また後で話の続きをしようね！")
         except Exception as e:
             print("AIの処理に失敗したうえで送信に失敗しました。エラー内容: ", e)
     
-
 client.run(DISCORD_TOKEN)
 
 
