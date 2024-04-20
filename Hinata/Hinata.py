@@ -2,7 +2,7 @@ import discord
 import google.generativeai as LLM
 from os import environ
 
-GOOGLE_API_KEY = environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+GOOGLE_API_KEY = environ.get("GOOGLE_AI_API_KEY")
 LLM.configure(api_key=GOOGLE_API_KEY)
 safety_settings = [
     {
